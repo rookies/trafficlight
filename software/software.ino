@@ -55,7 +55,7 @@ void setLights(byte red, byte yellow, byte green) {
 
 DmxReceiver dmx(pinDmx, 3);
 ModeSwitcher<Mode,4> mode;
-Flash flash(100, [](bool turnOn) {
+Flash flash(500, 200, [](bool turnOn) {
  if (turnOn) {
    setLights(255, 255, 255);
  } else {
