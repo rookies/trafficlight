@@ -1,20 +1,26 @@
-SKETCH    := software
+SKETCH    := software.ino
 LIBRARIES := DmxReceiver
+BAUDRATE  := 86400
+TARGET    ?= ..arduino.avr.nano
 BOARD     ?= arduino:avr:nano:cpu=atmega328old
 ARDUINO   ?= arduino-cli
+PICOCOM   ?= picocom
 PORT      ?= /dev/ttyUSB0
 LIB_DIR   ?= ~/Arduino/libraries
 
-SRC=$(SKETCH).ino $(foreach lib,$(LIBRARIES),$(wildcard $(LIB_DIR)/$(lib)/*))
+SRC = $(SKETCH) $(foreach lib,$(LIBRARIES),$(wildcard $(LIB_DIR)/$(lib)/*))
 
-upload : ..arduino.avr.nano.hex
+upload : $(TARGET).hex
 	$(ARDUINO) upload -p $(PORT) --fqbn $(BOARD) .
 
-compile : ..arduino.avr.nano.hex
+compile : $(TARGET).hex
 
-..arduino.avr.nano.hex : $(SRC)
-	arduino-cli compile --fqbn $(BOARD) .
+console :
+	$(PICOCOM) -b $(BAUDRATE) $(PORT)
+
+$(TARGET).hex : $(SRC)
+	$(ARDUINO) compile --fqbn $(BOARD) .
 
 .PHONY : clean
 clean :
-	$(RM) ..arduino.avr.nano.hex ..arduino.avr.nano.elf
+	$(RM) $(TARGET).hex $(TARGET).elf
