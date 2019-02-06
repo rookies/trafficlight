@@ -12,9 +12,7 @@ const byte pinButton = A1;
 
 enum Mode : byte {
   Dmx = 0,
-  Chaser = 1,
-  Test2 = 2,
-  Test3 = 3
+  Random = 1
 };
 
 void setLights(byte red, byte yellow, byte green) {
@@ -24,7 +22,7 @@ void setLights(byte red, byte yellow, byte green) {
 }
 
 DmxReceiver dmx(pinDmx, 3);
-ModeSwitcher<Mode,4> mode;
+ModeSwitcher<Mode,2> mode;
 Flash flash(500, 200, [](bool turnOn) {
  if (turnOn) {
    setLights(255, 255, 255);
@@ -45,8 +43,8 @@ void setup() {
   pinMode(pinGreen, OUTPUT);
   /* Define button as input with pullup resistor: */
   pinMode(pinButton, INPUT_PULLUP);
-  /* Flash three times on startup: */
-  flash.counter = 3;
+  /* Flash once on startup: */
+  flash.counter = 1;
 }
 
 void loop() {
@@ -63,8 +61,21 @@ void loop() {
   };
   /* Flash the lights: */
   if (flash.run()) return;
-  /* Receive DMX data: */
-  if (dmx.poll()) {
-    setLights(dmx.getValue(0), dmx.getValue(1), dmx.getValue(2));
+  /* If lights are not flashing, set them according
+     to the mode we are currently in: */
+  switch (mode.mode) {
+    case Mode::Dmx:
+      /* DMX mode */
+      if (dmx.poll()) {
+        setLights(dmx.getValue(0), dmx.getValue(1), dmx.getValue(2));
+      }
+      break;
+    case Mode::Random:
+      /* Random mode */
+      setLights(127, 127, 127);
+      /* TODO */
+      break;
+    default:
+      setLights(0, 0, 0);
   }
 }
