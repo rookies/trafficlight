@@ -71,6 +71,9 @@ class Flash {
       }
       return true;
     }
+    void reset() {
+      _state = 0;
+    }
   private:
     byte _state = 0;
     unsigned long _time = 0;

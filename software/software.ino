@@ -80,8 +80,6 @@ void setup() {
 }
 
 void loop() {
-  /* Flash the lights: */
-  if (flash.run()) return;
   /* Check if button is pressed: */
   byte button = digitalRead(pinButton);
   if (button == 1 && buttonPressed) {
@@ -90,8 +88,11 @@ void loop() {
     Serial.println("Button pressed!");
     buttonPressed = true;
     mode.next();
+    flash.reset();
     flash.counter = mode.mode + 1;
   };
+  /* Flash the lights: */
+  if (flash.run()) return;
   /* Receive DMX data: */
   if (dmx.poll()) {
     setLights(dmx.getValue(0), dmx.getValue(1), dmx.getValue(2));
