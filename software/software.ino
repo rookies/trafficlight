@@ -1,7 +1,7 @@
 #include <DmxReceiver.h>
-#include "ModeSwitcher.h"
-#include "Flash.h"
-#include "ExpTable.h"
+#include "ModeSwitcher.hh"
+#include "Flash.hh"
+#include "ExpTable.hh"
 
 /* Pin Configuration: */
 const byte pinRed = 10;

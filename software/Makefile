@@ -9,7 +9,7 @@ PORT      ?= /dev/ttyUSB0
 LIB_DIR   ?= ~/Arduino/libraries
 
 SRC = $(SKETCH) \
-      $(wildcard *.h) \
+      $(wildcard *.hh) \
       $(foreach lib,$(LIBRARIES),$(wildcard $(LIB_DIR)/$(lib)/*))
 
 upload : $(TARGET).hex
