@@ -1,5 +1,7 @@
 #include <avr/pgmspace.h>
 #include <DmxReceiver.h>
+#include "ModeSwitcher.h"
+#include "Flash.h"
 
 /* Pin Configuration: */
 const byte pinRed = 10;
@@ -38,13 +40,12 @@ const byte expTable[256] PROGMEM = {
   255
 };
 
-DmxReceiver dmx(pinDmx, 3);
-
-byte flashCounter = 0;
-byte flashingState = 0;
-unsigned long flashTime = 0;
-const unsigned long flashDuration = 100;
-bool buttonPressed = false;
+enum Mode : byte {
+  Dmx = 0,
+  Chaser = 1,
+  Test2 = 2,
+  Test3 = 3
+};
 
 void setLights(byte red, byte yellow, byte green) {
   analogWrite(pinRed, pgm_read_byte(expTable + red));
@@ -52,25 +53,17 @@ void setLights(byte red, byte yellow, byte green) {
   analogWrite(pinGreen, pgm_read_byte(expTable + green));
 }
 
-void flash() {
-  if (flashCounter == 0) return;
-  if (flashingState == 0) {
+DmxReceiver dmx(pinDmx, 3);
+ModeSwitcher<Mode,4> mode;
+Flash flash(100, [](bool turnOn) {
+ if (turnOn) {
+   setLights(255, 255, 255);
+ } else {
     setLights(0, 0, 0);
-    flashingState = 1;
-    flashTime = millis();
-  } else if (flashingState == 1 && (millis() - flashTime) > flashDuration) {
-    setLights(255, 255, 255);
-    flashingState = 2;
-    flashTime = millis();
-  } else if (flashingState == 2 && (millis() - flashTime) > flashDuration) {
-    setLights(0, 0, 0);
-    flashingState = 3;
-    flashTime = millis();
-  } else if (flashingState == 3 && (millis() - flashTime) > flashDuration) {
-    flashingState = 0;
-    flashCounter--;
-  }
-}
+ }
+});
+
+bool buttonPressed = false;
 
 void setup() {
   /* Init serial port: */
@@ -83,23 +76,21 @@ void setup() {
   /* Define button as input with pullup resistor: */
   pinMode(pinButton, INPUT_PULLUP);
   /* Flash three times on startup: */
-  flashCounter = 3;
+  flash.counter = 3;
 }
 
 void loop() {
   /* Flash the lights: */
-  if (flashCounter != 0) {
-    flash();
-    return;
-  }
+  if (flash.run()) return;
   /* Check if button is pressed: */
   byte button = digitalRead(pinButton);
   if (button == 1 && buttonPressed) {
     buttonPressed = false;
   } else if (button == 0 && !buttonPressed) {
     Serial.println("Button pressed!");
-    flashCounter = 1;
     buttonPressed = true;
+    mode.next();
+    flash.counter = mode.mode + 1;
   };
   /* Receive DMX data: */
   if (dmx.poll()) {
