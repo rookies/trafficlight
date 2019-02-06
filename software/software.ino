@@ -6,6 +6,7 @@ const byte pinRed = 10;
 const byte pinYellow = 11;
 const byte pinGreen = 9;
 const byte pinDmx = 6;
+const byte pinButton = A1;
 
 /**
  * A pre-computed table of function values for
@@ -39,6 +40,38 @@ const byte expTable[256] PROGMEM = {
 
 DmxReceiver dmx(pinDmx, 3);
 
+byte flashCounter = 0;
+byte flashingState = 0;
+unsigned long flashTime = 0;
+const unsigned long flashDuration = 100;
+bool buttonPressed = false;
+
+void setLights(byte red, byte yellow, byte green) {
+  analogWrite(pinRed, pgm_read_byte(expTable + red));
+  analogWrite(pinYellow, pgm_read_byte(expTable + yellow));
+  analogWrite(pinGreen, pgm_read_byte(expTable + green));
+}
+
+void flash() {
+  if (flashCounter == 0) return;
+  if (flashingState == 0) {
+    setLights(0, 0, 0);
+    flashingState = 1;
+    flashTime = millis();
+  } else if (flashingState == 1 && (millis() - flashTime) > flashDuration) {
+    setLights(255, 255, 255);
+    flashingState = 2;
+    flashTime = millis();
+  } else if (flashingState == 2 && (millis() - flashTime) > flashDuration) {
+    setLights(0, 0, 0);
+    flashingState = 3;
+    flashTime = millis();
+  } else if (flashingState == 3 && (millis() - flashTime) > flashDuration) {
+    flashingState = 0;
+    flashCounter--;
+  }
+}
+
 void setup() {
   /* Init serial port: */
   Serial.begin(86400);
@@ -47,18 +80,29 @@ void setup() {
   pinMode(pinRed, OUTPUT);
   pinMode(pinYellow, OUTPUT);
   pinMode(pinGreen, OUTPUT);
+  /* Define button as input with pullup resistor: */
+  pinMode(pinButton, INPUT_PULLUP);
+  /* Flash three times on startup: */
+  flashCounter = 3;
 }
 
 void loop() {
-  if (dmx.poll()) {
-    Serial.print(dmx.getValue(0));
-    Serial.print(F(" "));
-    Serial.print(dmx.getValue(1));
-    Serial.print(F(" "));
-    Serial.print(dmx.getValue(2));
-    Serial.println(F(""));
-    analogWrite(pinRed, pgm_read_byte_near(expTable + dmx.getValue(0)));
-    analogWrite(pinYellow, pgm_read_byte_near(expTable + dmx.getValue(1)));
-    analogWrite(pinGreen, pgm_read_byte_near(expTable + dmx.getValue(2)));
+  /* Flash the lights: */
+  if (flashCounter != 0) {
+    flash();
+    return;
+  }
+  /* Check if button is pressed: */
+  byte button = digitalRead(pinButton);
+  if (button == 1 && buttonPressed) {
+    buttonPressed = false;
+  } else if (button == 0 && !buttonPressed) {
+    Serial.println("Button pressed!");
+    flashCounter = 1;
+    buttonPressed = true;
   };
+  /* Receive DMX data: */
+  if (dmx.poll()) {
+    setLights(dmx.getValue(0), dmx.getValue(1), dmx.getValue(2));
+  }
 }
