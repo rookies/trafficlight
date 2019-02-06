@@ -16,6 +16,7 @@ upload : $(TARGET).hex
 compile : $(TARGET).hex
 
 console :
+	@echo "NOTE: Press Ctrl+A Ctrl+X to exit."
 	$(PICOCOM) -b $(BAUDRATE) $(PORT)
 
 $(TARGET).hex : $(SRC)
