@@ -8,7 +8,9 @@ PICOCOM   ?= picocom
 PORT      ?= /dev/ttyUSB0
 LIB_DIR   ?= ~/Arduino/libraries
 
-SRC = $(SKETCH) $(foreach lib,$(LIBRARIES),$(wildcard $(LIB_DIR)/$(lib)/*))
+SRC = $(SKETCH) \
+      $(wildcard *.h) \
+      $(foreach lib,$(LIBRARIES),$(wildcard $(LIB_DIR)/$(lib)/*))
 
 upload : $(TARGET).hex
 	$(ARDUINO) upload -p $(PORT) --fqbn $(BOARD) .
