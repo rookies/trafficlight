@@ -1,28 +1,20 @@
 #include <DmxReceiver.h>
+#include "Pins.hh"
+#include "Functions.hh"
 #include "ModeSwitcher.hh"
 #include "Flash.hh"
-#include "ExpTable.hh"
 
-/* Pin Configuration: */
-const byte pinRed = 10;
-const byte pinYellow = 11;
-const byte pinGreen = 9;
-const byte pinDmx = 6;
-const byte pinButton = A1;
-
+/* Modes of the traffic light: */
 enum Mode : byte {
   Dmx = 0,
   Random = 1
 };
-
-void setLights(byte red, byte yellow, byte green) {
-  analogWrite(pinRed, pgm_read_byte(expTable + red));
-  analogWrite(pinYellow, pgm_read_byte(expTable + yellow));
-  analogWrite(pinGreen, pgm_read_byte(expTable + green));
-}
-
-DmxReceiver dmx(pinDmx, 3);
 ModeSwitcher<Mode,2> mode;
+/* State of the button: */
+bool buttonPressed = false;
+/* To receive DMX data: */
+DmxReceiver dmx(pinDmx, 3);
+/* To flash the lights: */
 Flash flash(500, 200, [](bool turnOn) {
  if (turnOn) {
    setLights(255, 255, 255);
@@ -31,12 +23,10 @@ Flash flash(500, 200, [](bool turnOn) {
  }
 });
 
-bool buttonPressed = false;
-
 void setup() {
   /* Init serial port: */
   Serial.begin(86400);
-  Serial.println(F("Hello!"));
+  Serial.println(F("Hello, I'm trafficlight v0.1!"));
   /* Define lights as output: */
   pinMode(pinRed, OUTPUT);
   pinMode(pinYellow, OUTPUT);
