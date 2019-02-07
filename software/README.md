@@ -27,6 +27,5 @@ to `/dev/ttyUSB0`.
 You can either change these settings directly in the Makefile or add options
 to the call to make, e.g.
 ```bash
-make BOARD=arduino:avr:uno TARGET=..arduino.avr.uno PORT=/dev/ttyUSB2
+make BOARD=arduino:avr:uno PORT=/dev/ttyUSB2
 ```
-Note that you also need to change the `TARGET` if you change the `BOARD`.
