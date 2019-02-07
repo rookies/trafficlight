@@ -1,5 +1,5 @@
-#ifndef Flash_h
-#define Flash_h
+#ifndef Flash_hh
+#define Flash_hh
 
 /**
  * Flashes lights in the following pattern:

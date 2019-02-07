@@ -1,5 +1,5 @@
-#ifndef ModeSwitcher_h
-#define ModeSwitcher_h
+#ifndef ModeSwitcher_hh
+#define ModeSwitcher_hh
 
 template <typename T, byte N>
 struct ModeSwitcher {
