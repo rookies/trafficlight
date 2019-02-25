@@ -9,7 +9,7 @@ LIB_DIR   ?= ~/Arduino/libraries
 
 SRC    := $(SKETCH) \
           $(wildcard *.hh) \
-          $(foreach lib,$(LIBRARIES),$(wildcard $(LIB_DIR)/$(lib)/*))
+          $(foreach lib,$(LIBRARIES),$(LIB_DIR)/$(lib) $(wildcard $(LIB_DIR)/$(lib)/*))
 TARGET := ..$(subst $(noop) $(noop),.,$(filter-out cpu=%,$(subst :, ,$(BOARD))))
 
 upload : $(TARGET).hex
