@@ -36,6 +36,9 @@ void setup()
   pinMode(pinRed, OUTPUT);
   pinMode(pinYellow, OUTPUT);
   pinMode(pinGreen, OUTPUT);
+  analogWrite(pinRed, 1023);
+  analogWrite(pinYellow, 1023);
+  analogWrite(pinGreen, 1023);
 }
 
 void loop() {
