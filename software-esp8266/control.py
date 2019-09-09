@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import socket, time, argparse, random, sys
+import socket, time, argparse, random, sys, math
 
 class Sender(object):
     def __init__(self, host, port):
@@ -10,6 +10,7 @@ class Sender(object):
         self.sock.sendto(f'{v1},{v2},{v3}'.encode('ascii'), self.hostpair)
 
 class Main(object):
+    minVal = 300
     maxVal = 1023
 
     def __init__(self):
@@ -21,7 +22,7 @@ class Main(object):
         parser.add_argument('--trafficlight', dest='action_trafficlight', action='store_true', help='imitate a real traffic light')
         parser.add_argument('--crazy', dest='action_crazy', action='store_true', help='drive everyone crazy')
         parser.add_argument('--set', dest='action_set', action='store', nargs=3, metavar=('R', 'Y', 'G'), help='set the lights to the given brightness values')
-        parser.add_argument('--fade', dest='action_fade', action='store_true', help='fade between the lights')
+        parser.add_argument('--fade', dest='action_fade', action='store_true', help='fade lights randomly')
         self.args = parser.parse_args()
 
         # Check if exactly one action is specified:
@@ -42,9 +43,16 @@ class Main(object):
         print(f'Sending to {self.args.host}:{self.args.port} ...')
         self.sender = Sender(self.args.host, self.args.port)
 
-    def _set(self, v1, v2, v3):
-        # TODO: logarithmic mapping
-        self.sender.send(v1, v2, v3)
+    def _map(self, v):
+        a = 0.49
+        b = self.maxVal / math.log(self.maxVal / a)
+        return round(a * math.exp(v / b))
+
+    def _set(self, v1, v2, v3, exp=True):
+        args = (v1,v2,v3)
+        if exp:
+            args = map(self._map, args)
+        self.sender.send(*args)
 
     def action_on(self):
         print('Switching everything on.')
@@ -85,8 +93,22 @@ class Main(object):
     def action_fade(self):
         print('Entering fade mode. Exit with Ctrl+C.')
         try:
-            # TODO
-            pass
+            increasing = [True,True,True]
+            vals = [self.minVal,self.minVal,self.minVal]
+            while True:
+                for i in range(3):
+                    # Calculate new value:
+                    if increasing[i]:
+                        vals[i] += 1
+                    else:
+                        vals[i] -= 1
+                    # Switch direction at min/max value or randomly:
+                    if (vals[i] <= self.minVal) or (vals[i] >= self.maxVal) or (random.random() > .999):
+                        increasing[i] = not increasing[i]
+                # Set new values:
+                self._set(*vals)
+                # Sleep:
+                time.sleep(.01)
         except KeyboardInterrupt:
             self.action_off()
 
