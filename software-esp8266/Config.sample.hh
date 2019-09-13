@@ -12,4 +12,9 @@ IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
 const char *ssid = "xxxxxxxx";
 const char *passphrase = "xxxxxxxx";
-unsigned int port = 1337;
+const unsigned int port = 1337;
+
+/* OTA update configuration: */
+const unsigned int otaPort = 8266;
+const char *otaHostname = "trafficlight";
+const char *otaPassword = "xxxxxxxx";

@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 #include "Config.hh"
 
 byte packetSize = 14;
@@ -32,6 +33,12 @@ void setup()
   Serial.print(":");
   Serial.println(port);
 
+  /* Setup OTA updates: */
+  ArduinoOTA.setPort(otaPort);
+  ArduinoOTA.setHostname(otaHostname);
+  ArduinoOTA.setPassword(otaPassword);
+  ArduinoOTA.begin();
+
   /* Set pins: */
   pinMode(pinRed, OUTPUT);
   pinMode(pinYellow, OUTPUT);
@@ -42,6 +49,10 @@ void setup()
 }
 
 void loop() {
+  /* Handle OTA updates: */
+  ArduinoOTA.handle();
+
+  /* Handle UDP packets: */
   char buf[packetSize+1];
   unsigned int v1,v2,v3;
   if (server.parsePacket()) {
